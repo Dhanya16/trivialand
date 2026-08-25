@@ -40,6 +40,8 @@ model User {
   quizAttempts          QuizAttempt[]
   contestParticipations ContestParticipation[]
   contestRating         ContestRating?
+  discussions           Discussion[]           @relation("DiscussionAuthor")
+  discussionReplies     DiscussionReply[]      @relation("ReplyAuthor")
 
   @@map("users")
 }
@@ -82,12 +84,13 @@ model Level {
 }
 
 model Quiz {
-  id        String        @id @default(cuid())
-  title     String
-  levelId   String        @map("level_id")
-  level     Level         @relation(fields: [levelId], references: [id], onDelete: Cascade)
-  questions Question[]
-  attempts  QuizAttempt[]
+  id          String        @id @default(cuid())
+  title       String
+  levelId     String        @map("level_id")
+  level       Level         @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  attempts    QuizAttempt[]
+  discussions Discussion[]
 
   @@map("quizzes")
 }
@@ -103,6 +106,7 @@ model Question {
   quizAnswers      QuizAnswer[]
   contestQuestions ContestQuestion[]
   contestAnswers   ContestAnswer[]
+  discussions      Discussion[]
 
   @@unique([quizId, order])
   @@map("questions")
@@ -230,4 +234,35 @@ model ContestRating {
 
   @@index([rating])
   @@map("contest_ratings")
+}
+
+model Discussion {
+  id               String            @id @default(cuid())
+  title            String
+  topic            String
+  authorId         String            @map("author_id")
+  linkedQuestionId String?           @map("linked_question_id")
+  linkedQuizId     String?           @map("linked_quiz_id")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  author           User              @relation("DiscussionAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  linkedQuestion   Question?         @relation(fields: [linkedQuestionId], references: [id], onDelete: SetNull)
+  linkedQuiz       Quiz?             @relation(fields: [linkedQuizId], references: [id], onDelete: SetNull)
+  replies          DiscussionReply[]
+
+  @@index([createdAt])
+  @@index([topic])
+  @@map("discussions")
+}
+
+model DiscussionReply {
+  id           String     @id @default(cuid())
+  discussionId String     @map("discussion_id")
+  authorId     String     @map("author_id")
+  content      String
+  createdAt    DateTime   @default(now()) @map("created_at")
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  author       User       @relation("ReplyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([discussionId, createdAt])
+  @@map("discussion_replies")
 }
