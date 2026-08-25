@@ -12,3 +12,82 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+model Category {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  name          String
+  description   String
+  sortOrder     Int           @default(0) @map("sort_order")
+  subcategories Subcategory[]
+
+  @@index([sortOrder])
+  @@map("categories")
+}
+
+model Subcategory {
+  id         String   @id @default(cuid())
+  slug       String
+  name       String
+  categoryId String   @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  levels     Level[]
+
+  @@unique([categoryId, slug])
+  @@map("subcategories")
+}
+
+model Level {
+  id            String      @id @default(cuid())
+  name          String
+  order         Int
+  subcategoryId String      @map("subcategory_id")
+  subcategory   Subcategory @relation(fields: [subcategoryId], references: [id], onDelete: Cascade)
+  quizzes       Quiz[]
+
+  @@unique([subcategoryId, order])
+  @@map("levels")
+}
+
+model Quiz {
+  id        String     @id @default(cuid())
+  title     String
+  levelId   String     @map("level_id")
+  level     Level      @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  questions Question[]
+
+  @@map("quizzes")
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  text        String
+  explanation String?
+  order       Int
+  quizId      String   @map("quiz_id")
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options     Option[]
+
+  @@unique([quizId, order])
+  @@map("questions")
+}
+
+model Option {
+  id         String   @id @default(cuid())
+  text       String
+  isCorrect  Boolean  @default(false) @map("is_correct")
+  questionId String   @map("question_id")
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("options")
+}
