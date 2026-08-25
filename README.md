@@ -47,22 +47,29 @@ cd ..
 
 Create the required environment files. **Do not commit `.env` files or secrets to Git.**
 
-**`backend/.env`**
+Copy the backend template and fill in your values:
 
-```env
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/trivialand?schema=public"
-PORT=3001
+```bash
+cp backend/.env.example backend/.env
 ```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+```
+
+Then edit `backend/.env` with your local PostgreSQL credentials.
 
 **`frontend/.env.local`**
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
-Replace `USER`, `PASSWORD`, and the database name with your local PostgreSQL credentials.
+Replace `USER`, `PASSWORD`, and the database name in `backend/.env` with your local PostgreSQL credentials.
 
-The NestJS backend defaults to port `3000`, which conflicts with the Next.js dev server. Set `PORT=3001` in `backend/.env` as shown above.
+The NestJS backend defaults to port `3000`, which conflicts with the Next.js dev server. Set `PORT=3001` in `backend/.env` as shown in `.env.example`.
 
 ### 4. Set up the database
 
@@ -72,12 +79,15 @@ Ensure PostgreSQL is running, then create the database:
 createdb trivialand
 ```
 
-From the project root:
+Prisma lives in the **backend** (`backend/prisma/schema.prisma`). Run all Prisma commands from `backend/`:
 
 ```bash
+cd backend
 npx prisma generate
 npx prisma migrate dev
 ```
+
+`backend/.env` must contain `DATABASE_URL` before running migrations.
 
 ### 5. Start the development servers
 
@@ -97,6 +107,18 @@ cd backend
 npm run start:dev
 ```
 
+Verify the backend is running:
+
+```bash
+curl http://localhost:3001/api/health
+```
+
+Expected response:
+
+```json
+{"status":"ok","database":"ok","timestamp":"..."}
+```
+
 ## Development
 
 ### Frontend
@@ -113,7 +135,7 @@ npm run lint     # Run ESLint
 
 ```bash
 cd backend
-npm run start:dev   # Start in watch mode
+npm run start:dev   # Start in watch mode (http://localhost:3001)
 npm run build       # Compile TypeScript
 npm run start:prod  # Run compiled output
 npm run test        # Run unit tests
@@ -121,16 +143,21 @@ npm run test:e2e    # Run end-to-end tests
 npm run lint        # Run ESLint
 ```
 
+API routes are served under `/api` (e.g. `GET /api/health`).
+
 ### Prisma
 
-Run these from the project root:
+Prisma is installed in the backend. The schema is at `backend/prisma/schema.prisma`. Run these from `backend/`:
 
 ```bash
+cd backend
 npx prisma generate      # Generate Prisma client
 npx prisma migrate dev   # Create and apply migrations
 npx prisma studio        # Open database GUI
 npx prisma db push       # Push schema changes without migration (dev only)
 ```
+
+The Prisma client is generated into `node_modules/.prisma/client` and imported via `@prisma/client`.
 
 ## Git Workflow
 

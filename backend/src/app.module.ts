@@ -4,9 +4,11 @@ import { AppService } from './app.service';
 import { CategoriesModule } from './categories/categories.module';
 import { ContestsModule } from './contests/contests.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
-  imports: [CategoriesModule, ContestsModule, QuizzesModule],
+  imports: [PrismaModule,HealthModule,CategoriesModule, ContestsModule, QuizzesModule],
   controllers: [AppController],
   providers: [AppService],
 })
