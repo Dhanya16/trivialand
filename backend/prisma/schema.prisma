@@ -24,14 +24,22 @@ enum QuizAttemptType {
   ai
 }
 
+enum ContestStatus {
+  upcoming
+  live
+  past
+}
+
 model User {
-  id            String          @id @default(cuid())
-  username      String          @unique
-  email         String          @unique
-  passwordHash  String          @map("password_hash")
-  createdAt     DateTime        @default(now()) @map("created_at")
-  levelProgress LevelProgress[]
-  quizAttempts  QuizAttempt[]
+  id                    String                 @id @default(cuid())
+  username              String                 @unique
+  email                 String                 @unique
+  passwordHash          String                 @map("password_hash")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  levelProgress         LevelProgress[]
+  quizAttempts          QuizAttempt[]
+  contestParticipations ContestParticipation[]
+  contestRating         ContestRating?
 
   @@map("users")
 }
@@ -85,26 +93,29 @@ model Quiz {
 }
 
 model Question {
-  id          String       @id @default(cuid())
-  text        String
-  explanation String?
-  order       Int
-  quizId      String       @map("quiz_id")
-  quiz        Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  options     Option[]
-  quizAnswers QuizAnswer[]
+  id               String            @id @default(cuid())
+  text             String
+  explanation      String?
+  order            Int
+  quizId           String            @map("quiz_id")
+  quiz             Quiz              @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options          Option[]
+  quizAnswers      QuizAnswer[]
+  contestQuestions ContestQuestion[]
+  contestAnswers   ContestAnswer[]
 
   @@unique([quizId, order])
   @@map("questions")
 }
 
 model Option {
-  id          String       @id @default(cuid())
-  text        String
-  isCorrect   Boolean      @default(false) @map("is_correct")
-  questionId  String       @map("question_id")
-  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  quizAnswers QuizAnswer[]
+  id             String          @id @default(cuid())
+  text           String
+  isCorrect      Boolean         @default(false) @map("is_correct")
+  questionId     String          @map("question_id")
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  quizAnswers    QuizAnswer[]
+  contestAnswers ContestAnswer[]
 
   @@map("options")
 }
@@ -150,4 +161,73 @@ model QuizAnswer {
 
   @@unique([attemptId, questionId])
   @@map("quiz_answers")
+}
+
+model Contest {
+  id              String                 @id @default(cuid())
+  title           String
+  description     String
+  startTime       DateTime               @map("start_time")
+  durationMinutes Int                    @map("duration_minutes")
+  status          ContestStatus          @default(upcoming)
+  questions       ContestQuestion[]
+  participations  ContestParticipation[]
+
+  @@index([status, startTime])
+  @@map("contests")
+}
+
+model ContestQuestion {
+  id         String   @id @default(cuid())
+  contestId  String   @map("contest_id")
+  questionId String   @map("question_id")
+  points     Int      @default(1)
+  order      Int
+  contest    Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, questionId])
+  @@unique([contestId, order])
+  @@map("contest_questions")
+}
+
+model ContestParticipation {
+  id          String          @id @default(cuid())
+  userId      String          @map("user_id")
+  contestId   String          @map("contest_id")
+  startedAt   DateTime        @default(now()) @map("started_at")
+  submittedAt DateTime?       @map("submitted_at")
+  score       Int?
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contest     Contest         @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  answers     ContestAnswer[]
+
+  @@unique([userId, contestId])
+  @@index([contestId, score])
+  @@map("contest_participations")
+}
+
+model ContestAnswer {
+  id               String               @id @default(cuid())
+  participationId  String               @map("participation_id")
+  questionId       String               @map("question_id")
+  selectedOptionId String               @map("selected_option_id")
+  isCorrect        Boolean              @map("is_correct")
+  participation    ContestParticipation @relation(fields: [participationId], references: [id], onDelete: Cascade)
+  question         Question             @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption   Option               @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
+
+  @@unique([participationId, questionId])
+  @@map("contest_answers")
+}
+
+model ContestRating {
+  id        String   @id @default(cuid())
+  userId    String   @unique @map("user_id")
+  rating    Int      @default(1200)
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([rating])
+  @@map("contest_ratings")
 }
