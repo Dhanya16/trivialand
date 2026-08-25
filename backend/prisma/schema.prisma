@@ -30,6 +30,12 @@ enum ContestStatus {
   past
 }
 
+enum AiQuizStatus {
+  processing
+  ready
+  failed
+}
+
 model User {
   id                    String                 @id @default(cuid())
   username              String                 @unique
@@ -42,6 +48,9 @@ model User {
   contestRating         ContestRating?
   discussions           Discussion[]           @relation("DiscussionAuthor")
   discussionReplies     DiscussionReply[]      @relation("ReplyAuthor")
+  uploadedMaterials     UploadedMaterial[]
+  aiQuizzes             AiQuiz[]
+  aiQuizAttempts        AiQuizAttempt[]
 
   @@map("users")
 }
@@ -265,4 +274,71 @@ model DiscussionReply {
 
   @@index([discussionId, createdAt])
   @@map("discussion_replies")
+}
+
+model UploadedMaterial {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  filename    String
+  mimeType    String   @map("mime_type")
+  storagePath String   @map("storage_path")
+  createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aiQuizzes   AiQuiz[]
+
+  @@index([userId, createdAt])
+  @@map("uploaded_materials")
+}
+
+model AiQuiz {
+  id         String           @id @default(cuid())
+  userId     String           @map("user_id")
+  materialId String           @map("material_id")
+  title      String
+  status     AiQuizStatus     @default(processing)
+  createdAt  DateTime         @default(now()) @map("created_at")
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  material   UploadedMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  questions  AiQuestion[]
+  attempts   AiQuizAttempt[]
+
+  @@index([userId, createdAt])
+  @@map("ai_quizzes")
+}
+
+model AiQuestion {
+  id          String     @id @default(cuid())
+  aiQuizId    String     @map("ai_quiz_id")
+  text        String
+  explanation String?
+  order       Int
+  aiQuiz      AiQuiz     @relation(fields: [aiQuizId], references: [id], onDelete: Cascade)
+  options     AiOption[]
+
+  @@unique([aiQuizId, order])
+  @@map("ai_questions")
+}
+
+model AiOption {
+  id           String     @id @default(cuid())
+  aiQuestionId String     @map("ai_question_id")
+  text         String
+  isCorrect    Boolean    @default(false) @map("is_correct")
+  aiQuestion   AiQuestion @relation(fields: [aiQuestionId], references: [id], onDelete: Cascade)
+
+  @@map("ai_options")
+}
+
+model AiQuizAttempt {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  aiQuizId    String   @map("ai_quiz_id")
+  score       Int
+  total       Int
+  completedAt DateTime @default(now()) @map("completed_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aiQuiz      AiQuiz   @relation(fields: [aiQuizId], references: [id], onDelete: Cascade)
+
+  @@index([userId, completedAt])
+  @@map("ai_quiz_attempts")
 }
