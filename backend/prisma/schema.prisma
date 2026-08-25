@@ -51,6 +51,7 @@ model User {
   uploadedMaterials     UploadedMaterial[]
   aiQuizzes             AiQuiz[]
   aiQuizAttempts        AiQuizAttempt[]
+  userAchievements UserAchievement[]
 
   @@map("users")
 }
@@ -341,4 +342,28 @@ model AiQuizAttempt {
 
   @@index([userId, completedAt])
   @@map("ai_quiz_attempts")
+}
+
+model Achievement {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  name        String
+  description String
+  criteria    String
+  earnedBy    UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String      @map("user_id")
+  achievementId String      @map("achievement_id")
+  earnedAt      DateTime    @default(now()) @map("earned_at")
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId, earnedAt])
+  @@map("user_achievements")
 }
