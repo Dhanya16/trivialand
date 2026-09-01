@@ -206,15 +206,16 @@ model ContestQuestion {
 }
 
 model ContestParticipation {
-  id          String          @id @default(cuid())
-  userId      String          @map("user_id")
-  contestId   String          @map("contest_id")
-  startedAt   DateTime        @default(now()) @map("started_at")
-  submittedAt DateTime?       @map("submitted_at")
-  score       Int?
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contest     Contest         @relation(fields: [contestId], references: [id], onDelete: Cascade)
-  answers     ContestAnswer[]
+  id           String          @id @default(cuid())
+  userId       String          @map("user_id")
+  contestId    String          @map("contest_id")
+  startedAt    DateTime        @default(now()) @map("started_at")
+  submittedAt  DateTime?       @map("submitted_at")
+  score        Int?
+  ratingChange Int?            @map("rating_change")
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contest      Contest         @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  answers      ContestAnswer[]
 
   @@unique([userId, contestId])
   @@index([contestId, score])

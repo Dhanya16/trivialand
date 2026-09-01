@@ -7,9 +7,10 @@ import { QuizzesModule } from './quizzes/quizzes.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [PrismaModule,HealthModule,AuthModule,CategoriesModule, ContestsModule, QuizzesModule],
+  imports: [PrismaModule,HealthModule,AuthModule,UsersModule,CategoriesModule, ContestsModule, QuizzesModule],
   controllers: [AppController],
   providers: [AppService],
 })
