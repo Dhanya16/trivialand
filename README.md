@@ -143,7 +143,7 @@ npm run test:e2e    # Run end-to-end tests
 npm run lint        # Run ESLint
 ```
 
-API routes are served under `/api` (e.g. `GET /api/health`).
+API routes are served under `/api` (e.g. `GET /api/health`). See [`docs/auth-api.md`](docs/auth-api.md) for auth endpoint reference.
 
 ### Prisma
 
@@ -178,3 +178,4 @@ git push -u origin feature/<feature-name>
 ## Documentation
 
 - [`docs/prd.md`](docs/prd.md) — Product requirements and feature overview
+- [`docs/auth-api.md`](docs/auth-api.md) — Auth endpoints (register, login, me)
