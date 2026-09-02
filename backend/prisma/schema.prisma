@@ -36,6 +36,11 @@ enum AiQuizStatus {
   failed
 }
 
+enum QuizAttemptStatus {
+  in_progress
+  completed
+}
+
 model User {
   id                    String                 @id @default(cuid())
   username              String                 @unique
@@ -148,15 +153,17 @@ model LevelProgress {
 }
 
 model QuizAttempt {
-  id          String          @id @default(cuid())
-  userId      String          @map("user_id")
-  quizId      String          @map("quiz_id")
-  score       Int
+  id          String             @id @default(cuid())
+  userId      String             @map("user_id")
+  quizId      String             @map("quiz_id")
+  score       Int                @default(0)
   total       Int
-  type        QuizAttemptType @default(normal)
-  completedAt DateTime        @default(now()) @map("completed_at")
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quiz        Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  status      QuizAttemptStatus  @default(in_progress)
+  type        QuizAttemptType    @default(normal)
+  startedAt   DateTime           @default(now()) @map("started_at")
+  completedAt DateTime?          @map("completed_at")
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz        Quiz                @relation(fields: [quizId], references: [id], onDelete: Cascade)
   answers     QuizAnswer[]
 
   @@index([userId, completedAt])
