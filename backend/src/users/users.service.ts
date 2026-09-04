@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { UserBasicProfile } from './types/user-basic-profile.type';
-import { LevelProgressStatus } from '@prisma/client';
+import { LevelProgressStatus, QuizAttemptStatus } from '@prisma/client';
 import type { UserProgressResponse } from './types/user-progress.type';
 import type { QuizHistoryQueryDto } from './dto/quiz-history-query.dto';
 import type { PaginatedQuizHistoryResponse } from './types/quiz-history.type';
@@ -11,7 +11,7 @@ import type { UserAchievementsResponse } from './types/user-achievements.type';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async getMe(userId: string): Promise<UserBasicProfile> {
     const user = await this.prisma.user.findUnique({
@@ -50,7 +50,7 @@ export class UsersService {
         updatedAt: 'desc',
       },
     });
-  
+
     const levels = progress.map((item) => ({
       levelId: item.level.id,
       levelName: item.level.name,
@@ -61,7 +61,7 @@ export class UsersService {
       categoryName: item.level.subcategory.category.name,
       clearedAt: item.updatedAt,
     }));
-  
+
     return {
       levelsCleared: levels.length,
       levels,
@@ -74,9 +74,13 @@ export class UsersService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
-  
-    const where = { userId };
-  
+
+    const where = {
+      userId,
+      status: QuizAttemptStatus.completed,
+      completedAt: { not: null },
+    };
+
     const [attempts, total] = await Promise.all([
       this.prisma.quizAttempt.findMany({
         where,
@@ -99,7 +103,7 @@ export class UsersService {
       }),
       this.prisma.quizAttempt.count({ where }),
     ]);
-  
+
     const data = attempts.map((attempt) => ({
       id: attempt.id,
       quizId: attempt.quizId,
@@ -107,9 +111,9 @@ export class UsersService {
       score: attempt.score,
       total: attempt.total,
       type: attempt.type,
-      completedAt: attempt.completedAt,
+      completedAt: attempt.completedAt as Date,
     }));
-  
+
     return {
       data,
       meta: {
@@ -127,12 +131,12 @@ export class UsersService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
-  
+
     const where = {
       userId,
       submittedAt: { not: null },
     };
-  
+
     const [participations, total] = await Promise.all([
       this.prisma.contestParticipation.findMany({
         where,
@@ -154,7 +158,7 @@ export class UsersService {
       }),
       this.prisma.contestParticipation.count({ where }),
     ]);
-  
+
     const data = participations.map((item) => ({
       id: item.id,
       contestId: item.contestId,
@@ -163,7 +167,7 @@ export class UsersService {
       ratingChange: item.ratingChange,
       participatedAt: item.submittedAt as Date,
     }));
-  
+
     return {
       data,
       meta: {

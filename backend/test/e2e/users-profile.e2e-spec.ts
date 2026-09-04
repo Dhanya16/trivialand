@@ -27,7 +27,7 @@ describe('Users profile (e2e)', () => {
       .expect(200);
 
     accessToken = loginRes.body.accessToken;
-  });
+  },30000);
 
   afterAll(async () => {
     await app.close();

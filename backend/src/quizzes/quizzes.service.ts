@@ -4,25 +4,24 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
-import { LevelProgressStatus, QuizAttemptStatus } from '@prisma/client';
+import {
+    LevelProgressStatus,
+    QuizAttemptStatus,
+    QuizAttemptType,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubmitQuizDto } from './dto/submit-quiz.dto';
 import { gradeQuizSubmission } from './quiz-scoring.util';
-// ... import response types
+import type {
+    QuizMetadataResponse,
+    QuizQuestionResponse,
+    StartAttemptResponse,
+    SubmitQuizResponse,
+} from './types/quiz-response.type';
 
 @Injectable()
 export class QuizzesService {
     constructor(private readonly prisma: PrismaService) { }
-
-    async findById(quizId: string) { /* 11.1 */ }
-    async findQuestions(quizId: string) { /* 11.2 */ }
-    async startAttempt(quizId: string, userId: string) { /* 11.3, 11.8 */ }
-    async submitAttempt(
-        quizId: string,
-        attemptId: string,
-        userId: string,
-        dto: SubmitQuizDto,
-    ) { /* 11.4–11.7 */ }
 
     private async getQuizWithContext(quizId: string) {
         const quiz = await this.prisma.quiz.findUnique({
@@ -96,6 +95,18 @@ export class QuizzesService {
             previousCompleted = status === LevelProgressStatus.completed;
         }
     }
+    async findById(quizId: string): Promise<QuizMetadataResponse> {
+        const quiz = await this.getQuizWithContext(quizId);
+
+        return {
+            id: quiz.id,
+            title: quiz.title,
+            levelId: quiz.levelId,
+            categorySlug: quiz.level.subcategory.category.slug,
+            subcategorySlug: quiz.level.subcategory.slug,
+            questionCount: quiz.questions.length,
+        };
+    }
     async findQuestions(quizId: string): Promise<QuizQuestionResponse[]> {
         const quiz = await this.getQuizWithContext(quizId);
 
@@ -124,7 +135,7 @@ export class QuizzesService {
                 quizId,
                 total: quiz.questions.length,
                 status: QuizAttemptStatus.in_progress,
-                type: 'normal',
+                type: QuizAttemptType.normal,
             },
         });
 

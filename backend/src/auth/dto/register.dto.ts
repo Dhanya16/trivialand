@@ -10,7 +10,7 @@ import { Transform } from 'class-transformer';
 export class RegisterDto {
   @IsEmail({}, { message: 'email must be a valid email address' })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
-  email: string;
+  email!: string;
 
   @IsString()
   @MinLength(3, { message: 'username must be at least 3 characters' })
@@ -19,7 +19,7 @@ export class RegisterDto {
     message: 'username must contain only letters, numbers, and underscores',
   })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
-  username: string;
+  username!: string;
 
   @IsString()
   @MinLength(8, { message: 'password must be at least 8 characters' })
@@ -28,5 +28,5 @@ export class RegisterDto {
     message:
       'password must contain at least one uppercase letter, one lowercase letter, and one number',
   })
-  password: string;
+  password!: string;
 }

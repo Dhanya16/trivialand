@@ -1,11 +1,13 @@
 import {
-    Body,
-    Controller,
-    Get,
-    Param,
-    Post,
-    UseGuards,
-  } from '@nestjs/common';
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
   import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
   import { CurrentUser } from '../auth/decorators/current-user.decorator';
   import type { AuthUser } from '../auth/types/auth-user.type';
@@ -27,12 +29,14 @@ import {
     }
   
     @Post(':id/attempts')
+    @HttpCode(HttpStatus.CREATED)
     @UseGuards(JwtAuthGuard)
     startAttempt(@Param('id') id: string, @CurrentUser() user: AuthUser) {
       return this.quizzesService.startAttempt(id, user.id);
     }
   
     @Post(':id/attempts/:attemptId/submit')
+    @HttpCode(HttpStatus.OK)
     @UseGuards(JwtAuthGuard)
     submitAttempt(
       @Param('id') id: string,

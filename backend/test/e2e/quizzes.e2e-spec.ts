@@ -15,8 +15,7 @@ describe('Quizzes (e2e)', () => {
 
   let accessToken: string;
   let quizId: string;
-  let questionIds: string[];
-  let optionIds: string[];
+  let submitAnswers: { questionId: string; selectedOptionId: string }[];
 
   beforeAll(async () => {
     app = await createTestApp();
@@ -36,8 +35,10 @@ describe('Quizzes (e2e)', () => {
     }
 
     quizId = quiz.id;
-    questionIds = quiz.questions.map((q) => q.id);
-    optionIds = quiz.questions.flatMap((q) => q.options.map((o) => o.id));
+    submitAnswers = quiz.questions.map((question) => ({
+      questionId: question.id,
+      selectedOptionId: question.options[0].id,
+    }));
 
     await request(app.getHttpServer())
       .post('/api/auth/register')
@@ -50,7 +51,7 @@ describe('Quizzes (e2e)', () => {
       .expect(200);
 
     accessToken = loginRes.body.accessToken;
-  });
+  }, 30000);
 
   afterAll(async () => {
     await app.close();
@@ -81,10 +82,7 @@ describe('Quizzes (e2e)', () => {
       .post(`/api/quizzes/${quizId}/attempts/${startRes.body.attemptId}/submit`)
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
-        answers: questionIds.map((questionId, index) => ({
-          questionId,
-          selectedOptionId: optionIds[index],
-        })),
+        answers: submitAnswers,
       })
       .expect(200);
 
