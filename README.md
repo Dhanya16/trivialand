@@ -139,11 +139,17 @@ npm run start:dev   # Start in watch mode (http://localhost:3001)
 npm run build       # Compile TypeScript
 npm run start:prod  # Run compiled output
 npm run test        # Run unit tests
-npm run test:e2e    # Run end-to-end tests
-npm run lint        # Run ESLint
+npm run test:e2e    # E2E tests (uses TEST_DATABASE_URL or DATABASE_URL)
+npm run lint        # ESLint with auto-fix
+npm run lint:check  # ESLint without writes (CI)
+npm run ci          # lint:check → test → build → test:e2e
 ```
 
-API routes are served under `/api` (e.g. `GET /api/health`). See [`docs/auth-api.md`](docs/auth-api.md) for auth endpoint reference.
+API routes are served under `/api` (e.g. `GET /api/health`).
+
+- Swagger UI: `http://localhost:3001/api/docs`
+- Full endpoint reference: [`docs/api.md`](docs/api.md)
+- Auth details: [`docs/auth-api.md`](docs/auth-api.md)
 
 ### Prisma
 
@@ -178,4 +184,14 @@ git push -u origin feature/<feature-name>
 ## Documentation
 
 - [`docs/prd.md`](docs/prd.md) — Product requirements and feature overview
+- [`docs/api.md`](docs/api.md) — Full backend API endpoint reference
 - [`docs/auth-api.md`](docs/auth-api.md) — Auth endpoints (register, login, me)
+
+## CI
+
+GitHub Actions runs `backend` lint, unit tests, build, and e2e tests against PostgreSQL on pushes and pull requests to `main`. Locally:
+
+```bash
+cd backend
+npm run ci
+```
