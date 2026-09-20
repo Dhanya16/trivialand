@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../../src/auth/auth.service';
+import { LevelProgressService } from '../../src/progress/level-progress.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 
 jest.mock('bcrypt', () => ({
@@ -23,10 +24,15 @@ describe('AuthService', () => {
       findUnique: jest.fn(),
       create: jest.fn(),
     },
+    $transaction: jest.fn(),
   };
 
   const jwtService = {
     signAsync: jest.fn(),
+  };
+
+  const levelProgressService = {
+    unlockLevelOneForUser: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -35,11 +41,13 @@ describe('AuthService', () => {
         AuthService,
         { provide: PrismaService, useValue: prisma },
         { provide: JwtService, useValue: jwtService },
+        { provide: LevelProgressService, useValue: levelProgressService },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     jest.clearAllMocks();
+    prisma.$transaction.mockImplementation((callback) => callback(prisma));
   });
 
   describe('register', () => {
@@ -63,6 +71,10 @@ describe('AuthService', () => {
 
       expect(result.message).toBe('Registration successful');
       expect(result.user.email).toBe(dto.email);
+      expect(levelProgressService.unlockLevelOneForUser).toHaveBeenCalledWith(
+        'user-1',
+        prisma,
+      );
     });
 
     it('throws when email is already registered', async () => {

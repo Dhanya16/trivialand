@@ -10,6 +10,7 @@ import {
     QuizAttemptType,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { LevelProgressService } from '../progress/level-progress.service';
 import { SubmitQuizDto } from './dto/submit-quiz.dto';
 import { gradeQuizSubmission } from './quiz-scoring.util';
 import type {
@@ -21,7 +22,10 @@ import type {
 
 @Injectable()
 export class QuizzesService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly levelProgressService: LevelProgressService,
+    ) {}
 
     private async getQuizWithContext(quizId: string) {
         const quiz = await this.prisma.quiz.findUnique({
@@ -217,6 +221,14 @@ export class QuizzesService {
                     };
                 }),
             });
+
+            await this.levelProgressService.handleQuizSubmit(
+                userId,
+                quiz.levelId,
+                score,
+                total,
+                tx,
+            );
         });
 
         return {

@@ -10,12 +10,17 @@ import {
   import { LoginDto } from './dto/login.dto';
   import { NotFoundException } from '@nestjs/common';
 import type { MeResponse } from './types/me-response.type';
+import { LevelProgressService } from '../progress/level-progress.service';
   
   @Injectable()
   export class AuthService {
     private readonly saltRounds = 10;
   
-    constructor(private readonly prisma: PrismaService, private readonly jwtService: JwtService,) {}
+    constructor(
+      private readonly prisma: PrismaService,
+      private readonly jwtService: JwtService,
+      private readonly levelProgressService: LevelProgressService,
+    ) {}
   
     async register(dto: RegisterDto) {
       const existingUser = await this.prisma.user.findFirst({
@@ -33,18 +38,24 @@ import type { MeResponse } from './types/me-response.type';
   
       const passwordHash = await bcrypt.hash(dto.password, this.saltRounds);
   
-      const user = await this.prisma.user.create({
-        data: {
-          email: dto.email,
-          username: dto.username,
-          passwordHash,
-        },
-        select: {
-          id: true,
-          email: true,
-          username: true,
-          createdAt: true,
-        },
+      const user = await this.prisma.$transaction(async (tx) => {
+        const createdUser = await tx.user.create({
+          data: {
+            email: dto.email,
+            username: dto.username,
+            passwordHash,
+          },
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            createdAt: true,
+          },
+        });
+
+        await this.levelProgressService.unlockLevelOneForUser(createdUser.id, tx);
+
+        return createdUser;
       });
   
       return {
