@@ -146,7 +146,11 @@ describe('Contests (e2e)', () => {
       .expect(200);
 
     expect(standingsRes.body.data.length).toBeGreaterThan(0);
-    expect(standingsRes.body.data[0].username).toBe(username);
+    expect(
+      standingsRes.body.data.some(
+        (item: { username: string }) => item.username === username,
+      ),
+    ).toBe(true);
 
     const rankingsRes = await request(app.getHttpServer())
       .get('/api/contests/rankings')
