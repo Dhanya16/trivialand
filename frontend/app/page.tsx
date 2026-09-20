@@ -1,10 +1,13 @@
+export const dynamic = "force-dynamic";
+
 import { AnimatedAiVisual, AnimatedQuizVisual } from "@/components/AnimatedVisuals";
 import Button from "@/components/Button";
 import Footer from "@/components/Footer";
 import GlassCard from "@/components/GlassCard";
-import { contests } from "@/lib/data";
+import { fetchContestsByStatus } from "@/lib/api/contests";
 
-export default function Home() {
+export default async function Home() {
+  const contests = await fetchContestsByStatus();
   const liveContest = contests.find((c) => c.status === "live");
   const upcomingContest = contests.find((c) => c.status === "upcoming");
 

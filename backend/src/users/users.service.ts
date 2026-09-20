@@ -14,6 +14,7 @@ import type { PaginatedQuizHistoryResponse } from './types/quiz-history.type';
 import type { PaginatedContestHistoryResponse } from './types/contest-history.type';
 import type { UserContestRatingResponse } from './types/contest-rating.type';
 import type { UserAchievementsResponse } from './types/user-achievements.type';
+import type { UserProfileResponse } from './types/user-profile.type';
 
 @Injectable()
 export class UsersService {
@@ -209,6 +210,30 @@ export class UsersService {
       updatedAt: record?.updatedAt ?? null,
     };
   }
+  async getMeProfile(
+    userId: string,
+    query: QuizHistoryQueryDto,
+  ): Promise<UserProfileResponse> {
+    const [user, progress, contestRating, quizHistory, contestHistory, achievements] =
+      await Promise.all([
+        this.getMe(userId),
+        this.getMeProgress(userId),
+        this.getMeContestRating(userId),
+        this.getMeQuizHistory(userId, query),
+        this.getMeContestHistory(userId, query),
+        this.getMeAchievements(userId),
+      ]);
+
+    return {
+      user,
+      levelsCleared: progress.levelsCleared,
+      contestRating: contestRating.rating,
+      quizHistory,
+      contestHistory,
+      achievements: achievements.achievements,
+    };
+  }
+
   async getMeAchievements(userId: string): Promise<UserAchievementsResponse> {
     const earned = await this.prisma.userAchievement.findMany({
       where: { userId },

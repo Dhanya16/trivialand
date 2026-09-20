@@ -35,6 +35,7 @@ See also [`auth-api.md`](auth-api.md).
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/users/me` | Bearer | Basic profile |
+| GET | `/users/me/profile` | Bearer | Profile page aggregate (`?page&limit`) |
 | GET | `/users/me/progress` | Bearer | Levels cleared |
 | GET | `/users/me/quiz-history` | Bearer | Paginated quiz attempts (normal + AI) |
 | GET | `/users/me/contest-history` | Bearer | Paginated contest participations |
@@ -49,6 +50,7 @@ See also [`auth-api.md`](auth-api.md).
 | GET | `/categories/:slug` | No | Category by slug |
 | GET | `/categories/:slug/subcategories` | No | Subcategories |
 | GET | `/categories/:slug/:subSlug/levels` | Optional | Levels with progress status |
+| GET | `/categories/:slug/:subSlug/levels/:levelId/quizzes` | No | Quizzes in a level |
 
 ## Quizzes
 

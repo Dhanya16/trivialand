@@ -54,6 +54,30 @@ describe('CategoriesService', () => {
     });
   });
 
+  it('returns quizzes for a level', async () => {
+    prisma.subcategory.findFirst.mockResolvedValue({
+      levels: [
+        {
+          id: 'level-1',
+          quizzes: [
+            { id: 'quiz-1', title: 'Basics', levelId: 'level-1' },
+          ],
+        },
+      ],
+    });
+
+    const result = await service.findLevelQuizzes('science', 'physics', 'level-1');
+    expect(result).toEqual([
+      {
+        id: 'quiz-1',
+        title: 'Basics',
+        levelId: 'level-1',
+        categorySlug: 'science',
+        subcategorySlug: 'physics',
+      },
+    ]);
+  });
+
   it('returns levels with default status when not authed', async () => {
     prisma.subcategory.findFirst.mockResolvedValue({
       id: 'sub-1',

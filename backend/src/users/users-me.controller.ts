@@ -17,6 +17,14 @@ export class UsersMeController {
     return this.usersService.getMe(user.id);
   }
 
+  @Get('profile')
+  getMeProfile(
+    @CurrentUser() user: AuthUser,
+    @Query() query: QuizHistoryQueryDto,
+  ) {
+    return this.usersService.getMeProfile(user.id, query);
+  }
+
   @Get('progress')
   getMeProgress(@CurrentUser() user: AuthUser) {
     return this.usersService.getMeProgress(user.id);

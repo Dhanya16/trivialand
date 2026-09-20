@@ -149,6 +149,7 @@ API routes are served under `/api` (e.g. `GET /api/health`).
 
 - Swagger UI: `http://localhost:3001/api/docs`
 - Full endpoint reference: [`docs/api.md`](docs/api.md)
+- Frontend integration: [`docs/frontend-api.md`](docs/frontend-api.md)
 - Auth details: [`docs/auth-api.md`](docs/auth-api.md)
 
 ### Prisma
@@ -185,6 +186,7 @@ git push -u origin feature/<feature-name>
 
 - [`docs/prd.md`](docs/prd.md) — Product requirements and feature overview
 - [`docs/api.md`](docs/api.md) — Full backend API endpoint reference
+- [`docs/frontend-api.md`](docs/frontend-api.md) — Frontend ↔ backend contract (`NEXT_PUBLIC_API_URL`, errors, route mapping)
 - [`docs/auth-api.md`](docs/auth-api.md) — Auth endpoints (register, login, me)
 
 ## CI

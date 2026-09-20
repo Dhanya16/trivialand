@@ -20,6 +20,15 @@ export class CategoriesController {
     return this.categoriesService.findSubcategories(slug);
   }
 
+  @Get(':slug/:subSlug/levels/:levelId/quizzes')
+  findLevelQuizzes(
+    @Param('slug') slug: string,
+    @Param('subSlug') subSlug: string,
+    @Param('levelId') levelId: string,
+  ) {
+    return this.categoriesService.findLevelQuizzes(slug, subSlug, levelId);
+  }
+
   @Get(':slug/:subSlug/levels')
   @UseGuards(OptionalJwtAuthGuard)
   findLevels(

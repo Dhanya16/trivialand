@@ -1,9 +1,12 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import PageLayout from "@/components/PageLayout";
-import Quiz from "@/components/Quiz";
+import QuizPlayer from "@/components/QuizPlayer";
 import { AnimatedQuizVisual } from "@/components/AnimatedVisuals";
-import { getQuestions, getQuiz } from "@/lib/data";
+import { fetchQuiz, fetchQuizQuestions } from "@/lib/api/quizzes";
+import { isNotFoundError } from "@/lib/api/fetch";
 
 type Props = {
   params: Promise<{
@@ -16,18 +19,26 @@ type Props = {
 
 export default async function QuizPage({ params }: Props) {
   const { quizId } = await params;
-  const quiz = getQuiz(quizId);
-  const quizQuestions = getQuestions(quizId);
 
-  if (!quiz || quizQuestions.length === 0) {
-    notFound();
+  try {
+    const [quiz, quizQuestions] = await Promise.all([
+      fetchQuiz(quizId),
+      fetchQuizQuestions(quizId),
+    ]);
+
+    if (quizQuestions.length === 0) {
+      notFound();
+    }
+
+    return (
+      <PageLayout title="Quiz" subtitle={quiz.title} visual={<AnimatedQuizVisual />}>
+        <GlassCard>
+          <QuizPlayer quizId={quizId} title={quiz.title} questions={quizQuestions} />
+        </GlassCard>
+      </PageLayout>
+    );
+  } catch (error) {
+    if (isNotFoundError(error)) notFound();
+    throw error;
   }
-
-  return (
-    <PageLayout title="Quiz" subtitle={quiz.title} visual={<AnimatedQuizVisual />}>
-      <GlassCard>
-        <Quiz title={quiz.title} questions={quizQuestions} />
-      </GlassCard>
-    </PageLayout>
-  );
 }

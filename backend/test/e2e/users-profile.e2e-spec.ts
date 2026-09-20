@@ -33,6 +33,20 @@ describe('Users profile (e2e)', () => {
     await app.close();
   });
 
+  it('GET /users/me/profile returns aggregate profile', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/api/users/me/profile')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(res.body.user).toMatchObject({ email, username });
+    expect(res.body.levelsCleared).toBe(0);
+    expect(res.body.contestRating).toBe(1200);
+    expect(Array.isArray(res.body.achievements)).toBe(true);
+    expect(res.body.quizHistory.data).toEqual([]);
+    expect(res.body.contestHistory.data).toEqual([]);
+  });
+
   it('GET /users/me returns basic profile', async () => {
     const res = await request(app.getHttpServer())
       .get('/api/users/me')

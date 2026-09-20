@@ -3,6 +3,7 @@ import { LevelProgressStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import type {
   CategoryResponse,
+  LevelQuizListItem,
   LevelResponse,
   LevelStatus,
   SubcategoryResponse,
@@ -118,6 +119,47 @@ export class CategoriesService {
         status,
       };
     });
+  }
+
+  async findLevelQuizzes(
+    categorySlug: string,
+    subSlug: string,
+    levelId: string,
+  ): Promise<LevelQuizListItem[]> {
+    const subcategory = await this.prisma.subcategory.findFirst({
+      where: {
+        slug: subSlug,
+        category: { slug: categorySlug },
+      },
+      select: {
+        levels: {
+          where: { id: levelId },
+          select: {
+            id: true,
+            quizzes: {
+              orderBy: { title: 'asc' },
+              select: { id: true, title: true, levelId: true },
+            },
+          },
+        },
+      },
+    });
+
+    const level = subcategory?.levels[0];
+
+    if (!level) {
+      throw new NotFoundException(
+        `Level "${levelId}" not found in "${categorySlug}/${subSlug}"`,
+      );
+    }
+
+    return level.quizzes.map((quiz) => ({
+      id: quiz.id,
+      title: quiz.title,
+      levelId: quiz.levelId,
+      categorySlug,
+      subcategorySlug: subSlug,
+    }));
   }
 
   private resolveLevelStatus(

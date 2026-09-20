@@ -19,3 +19,11 @@ export type LevelResponse = {
   subcategorySlug: string;
   status: LevelStatus;
 };
+
+export type LevelQuizListItem = {
+  id: string;
+  title: string;
+  levelId: string;
+  categorySlug: string;
+  subcategorySlug: string;
+};

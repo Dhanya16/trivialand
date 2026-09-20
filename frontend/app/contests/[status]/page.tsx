@@ -1,6 +1,8 @@
+export const dynamic = "force-dynamic";
+
 import ContestCard from "@/components/ContestCard";
 import PageLayout from "@/components/PageLayout";
-import { getContestsByStatus } from "@/lib/data";
+import { fetchContestsByStatus } from "@/lib/api/contests";
 import type { Contest } from "@/lib/types";
 import { notFound } from "next/navigation";
 
@@ -41,7 +43,7 @@ export default async function ContestStatusPage({ params }: PageProps) {
     notFound();
   }
 
-  const items = getContestsByStatus(config.status);
+  const items = await fetchContestsByStatus(config.status);
 
   return (
     <PageLayout title={config.title} subtitle={config.subtitle} fullWidth>

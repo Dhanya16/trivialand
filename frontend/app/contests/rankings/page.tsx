@@ -1,7 +1,11 @@
-import PageLayout from "@/components/PageLayout";
-import { rankings } from "@/lib/data";
+export const dynamic = "force-dynamic";
 
-export default function RankingsPage() {
+import PageLayout from "@/components/PageLayout";
+import { fetchRankings } from "@/lib/api/contests";
+
+export default async function RankingsPage() {
+  const rankings = await fetchRankings(50, 1);
+
   return (
     <PageLayout title="Rankings" subtitle="Top players on Trivialand" fullWidth>
       <div className="card-light mx-auto max-w-2xl overflow-hidden p-0">

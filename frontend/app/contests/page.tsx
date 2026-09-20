@@ -1,13 +1,19 @@
+export const dynamic = "force-dynamic";
+
 import Button from "@/components/Button";
 import ContestColumn from "@/components/ContestColumn";
 import RankingsColumn from "@/components/RankingsColumn";
 import PageLayout from "@/components/PageLayout";
-import { getContestsByStatus, rankings } from "@/lib/data";
+import { fetchContestsByStatus, fetchRankingsPreview } from "@/lib/api/contests";
 
-export default function ContestsPage() {
-  const live = getContestsByStatus("live");
-  const upcoming = getContestsByStatus("upcoming");
-  const past = getContestsByStatus("past");
+export default async function ContestsPage() {
+  const [live, upcoming, past, rankings] = await Promise.all([
+    fetchContestsByStatus("live"),
+    fetchContestsByStatus("upcoming"),
+    fetchContestsByStatus("past"),
+    fetchRankingsPreview(5),
+  ]);
+
   const featuredLive = live[0];
 
   return (
@@ -29,7 +35,7 @@ export default function ContestsPage() {
               {featuredLive.description}
             </p>
           </div>
-          <Button>Enter Contest</Button>
+          <Button href="/contests/live">View live contests</Button>
         </div>
       )}
 

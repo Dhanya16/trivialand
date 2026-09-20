@@ -51,6 +51,19 @@ describe('Categories (e2e)', () => {
       status: 'unlocked',
     });
     expect(levelsRes.body[1].status).toBe('locked');
+
+    const levelId = levelsRes.body[0].id;
+    const quizzesRes = await request(app.getHttpServer())
+      .get(`/api/categories/science/physics/levels/${levelId}/quizzes`)
+      .expect(200);
+
+    expect(Array.isArray(quizzesRes.body)).toBe(true);
+    expect(quizzesRes.body.length).toBeGreaterThan(0);
+    expect(quizzesRes.body[0]).toMatchObject({
+      levelId,
+      categorySlug: 'science',
+      subcategorySlug: 'physics',
+    });
   });
 
   it('returns 404 for invalid category slug', async () => {
