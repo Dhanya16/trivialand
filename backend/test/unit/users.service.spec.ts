@@ -11,6 +11,7 @@ describe('UsersService', () => {
     user: { findUnique: jest.fn() },
     levelProgress: { findMany: jest.fn() },
     quizAttempt: { findMany: jest.fn(), count: jest.fn() },
+    aiQuizAttempt: { findMany: jest.fn(), count: jest.fn() },
     contestParticipation: { findMany: jest.fn(), count: jest.fn() },
     contestRating: { findUnique: jest.fn() },
     userAchievement: { findMany: jest.fn() },
@@ -75,7 +76,7 @@ describe('UsersService', () => {
   });
 
   describe('getMeQuizHistory', () => {
-    it('returns paginated quiz attempts', async () => {
+    it('returns paginated quiz attempts including AI quizzes', async () => {
       prisma.quizAttempt.findMany.mockResolvedValue([
         {
           id: 'a1',
@@ -87,14 +88,26 @@ describe('UsersService', () => {
           quiz: { title: 'Mechanics Basics' },
         },
       ]);
+      prisma.aiQuizAttempt.findMany.mockResolvedValue([
+        {
+          id: 'ai-a1',
+          aiQuizId: 'ai-q1',
+          score: 3,
+          total: 3,
+          completedAt: new Date('2026-08-15'),
+          aiQuiz: { title: 'Physics AI Quiz' },
+        },
+      ]);
       prisma.quizAttempt.count.mockResolvedValue(1);
+      prisma.aiQuizAttempt.count.mockResolvedValue(1);
 
       const result = await service.getMeQuizHistory('user-1', {
         page: 1,
         limit: 10,
       });
 
-      expect(result.data).toHaveLength(1);
+      expect(result.data).toHaveLength(2);
+      expect(result.data[0].type).toBe('ai');
       expect(result.meta.totalPages).toBe(1);
     });
   });

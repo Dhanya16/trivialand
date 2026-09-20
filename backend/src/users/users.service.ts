@@ -1,7 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { UserBasicProfile } from './types/user-basic-profile.type';
-import { LevelProgressStatus, QuizAttemptStatus } from '@prisma/client';
+import {
+  LevelProgressStatus,
+  QuizAttemptStatus,
+  QuizAttemptType,
+} from '@prisma/client';
 import { DEFAULT_RATING } from '../contests/contest-rating.util';
 import type { UserProgressResponse } from './types/user-progress.type';
 import type { QuizHistoryQueryDto } from './dto/quiz-history-query.dto';
@@ -76,44 +80,76 @@ export class UsersService {
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
 
-    const where = {
+    const normalWhere = {
       userId,
       status: QuizAttemptStatus.completed,
       completedAt: { not: null },
     };
 
-    const [attempts, total] = await Promise.all([
-      this.prisma.quizAttempt.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { completedAt: 'desc' },
-        select: {
-          id: true,
-          quizId: true,
-          score: true,
-          total: true,
-          type: true,
-          completedAt: true,
-          quiz: {
-            select: {
-              title: true,
+    const [normalAttempts, aiAttempts, normalCount, aiCount] =
+      await Promise.all([
+        this.prisma.quizAttempt.findMany({
+          where: normalWhere,
+          orderBy: { completedAt: 'desc' },
+          select: {
+            id: true,
+            quizId: true,
+            score: true,
+            total: true,
+            type: true,
+            completedAt: true,
+            quiz: {
+              select: {
+                title: true,
+              },
             },
           },
-        },
-      }),
-      this.prisma.quizAttempt.count({ where }),
-    ]);
+        }),
+        this.prisma.aiQuizAttempt.findMany({
+          where: { userId },
+          orderBy: { completedAt: 'desc' },
+          select: {
+            id: true,
+            aiQuizId: true,
+            score: true,
+            total: true,
+            completedAt: true,
+            aiQuiz: {
+              select: {
+                title: true,
+              },
+            },
+          },
+        }),
+        this.prisma.quizAttempt.count({ where: normalWhere }),
+        this.prisma.aiQuizAttempt.count({ where: { userId } }),
+      ]);
 
-    const data = attempts.map((attempt) => ({
-      id: attempt.id,
-      quizId: attempt.quizId,
-      quizTitle: attempt.quiz.title,
-      score: attempt.score,
-      total: attempt.total,
-      type: attempt.type,
-      completedAt: attempt.completedAt as Date,
-    }));
+    const merged = [
+      ...normalAttempts.map((attempt) => ({
+        id: attempt.id,
+        quizId: attempt.quizId,
+        quizTitle: attempt.quiz.title,
+        score: attempt.score,
+        total: attempt.total,
+        type: attempt.type,
+        completedAt: attempt.completedAt as Date,
+      })),
+      ...aiAttempts.map((attempt) => ({
+        id: attempt.id,
+        quizId: attempt.aiQuizId,
+        quizTitle: attempt.aiQuiz.title,
+        score: attempt.score,
+        total: attempt.total,
+        type: QuizAttemptType.ai,
+        completedAt: attempt.completedAt,
+      })),
+    ].sort(
+      (left, right) => right.completedAt.getTime() - left.completedAt.getTime(),
+    );
+
+    const total = normalCount + aiCount;
+    const data = merged.slice(skip, skip + limit);
 
     return {
       data,

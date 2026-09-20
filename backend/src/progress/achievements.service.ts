@@ -18,6 +18,7 @@ export class AchievementsService {
 
     const [
       quizAttempts,
+      aiQuizAttempts,
       levelsCleared,
       contestParticipations,
       submittedContests,
@@ -26,6 +27,7 @@ export class AchievementsService {
       client.quizAttempt.count({
         where: { userId, status: QuizAttemptStatus.completed },
       }),
+      client.aiQuizAttempt.count({ where: { userId } }),
       client.levelProgress.count({
         where: { userId, status: LevelProgressStatus.completed },
       }),
@@ -40,6 +42,7 @@ export class AchievementsService {
 
     const slugs: string[] = [];
     if (quizAttempts >= 1) slugs.push('first-quiz');
+    if (aiQuizAttempts >= 1) slugs.push('first-ai-quiz');
     if (levelsCleared >= 1) slugs.push('first-level');
     if (contestParticipations >= 1) slugs.push('first-contest');
     if (levelsCleared >= 5) slugs.push('levels-5');

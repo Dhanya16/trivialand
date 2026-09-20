@@ -83,6 +83,7 @@ const contests = [
 
 const achievements = [
   { slug: 'first-quiz', name: 'First quiz completed', description: 'Complete your first quiz.', criteria: 'quiz_attempts >= 1' },
+  { slug: 'first-ai-quiz', name: 'First AI quiz completed', description: 'Complete your first AI-generated quiz.', criteria: 'ai_quiz_attempts >= 1' },
   { slug: 'first-level', name: 'First level cleared', description: 'Clear your first level.', criteria: 'levels_cleared >= 1' },
   { slug: 'first-contest', name: 'First contest participated', description: 'Join your first contest.', criteria: 'contest_participations >= 1' },
   { slug: 'levels-5', name: '5 levels cleared', description: 'Clear five levels.', criteria: 'levels_cleared >= 5' },

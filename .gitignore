@@ -97,6 +97,7 @@ next-env.d.ts
 # ==========================================
 # Runtime / Temporary files
 # ==========================================
+backend/uploads/
 .temp/
 .tmp/
 pids/

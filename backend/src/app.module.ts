@@ -9,9 +9,10 @@ import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { DiscussionsModule } from './discussions/discussions.module';
+import { AiQuizModule } from './ai-quiz/ai-quiz.module';
 
 @Module({
-  imports: [PrismaModule,HealthModule,AuthModule,UsersModule,CategoriesModule, ContestsModule, QuizzesModule, DiscussionsModule],
+  imports: [PrismaModule,HealthModule,AuthModule,UsersModule,CategoriesModule, ContestsModule, QuizzesModule, DiscussionsModule, AiQuizModule],
   controllers: [AppController],
   providers: [AppService],
 })

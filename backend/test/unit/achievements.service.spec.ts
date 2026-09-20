@@ -7,6 +7,7 @@ describe('AchievementsService', () => {
 
   const prisma = {
     quizAttempt: { count: jest.fn() },
+    aiQuizAttempt: { count: jest.fn() },
     levelProgress: { count: jest.fn() },
     contestParticipation: { count: jest.fn() },
     contestRating: { findUnique: jest.fn() },
@@ -34,6 +35,7 @@ describe('AchievementsService', () => {
 
   it('awards first-contest on join without requiring a submit', async () => {
     prisma.quizAttempt.count.mockResolvedValue(0);
+    prisma.aiQuizAttempt.count.mockResolvedValue(0);
     prisma.levelProgress.count.mockResolvedValue(0);
     prisma.contestParticipation.count
       .mockResolvedValueOnce(1)
@@ -50,6 +52,7 @@ describe('AchievementsService', () => {
 
   it('does not award rating milestones when user skips contest submit', async () => {
     prisma.quizAttempt.count.mockResolvedValue(0);
+    prisma.aiQuizAttempt.count.mockResolvedValue(0);
     prisma.levelProgress.count.mockResolvedValue(0);
     prisma.contestParticipation.count
       .mockResolvedValueOnce(1)
@@ -69,6 +72,7 @@ describe('AchievementsService', () => {
 
   it('awards rating milestones after a submitted contest', async () => {
     prisma.quizAttempt.count.mockResolvedValue(0);
+    prisma.aiQuizAttempt.count.mockResolvedValue(0);
     prisma.levelProgress.count.mockResolvedValue(0);
     prisma.contestParticipation.count
       .mockResolvedValueOnce(1)
