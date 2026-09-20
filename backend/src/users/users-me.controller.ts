@@ -1,10 +1,12 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthUser } from '../auth/types/auth-user.type';
 import { UsersService } from './users.service';
 import { QuizHistoryQueryDto } from './dto/quiz-history-query.dto';
 
+@ApiTags('users')
 @Controller('users/me')
 @UseGuards(JwtAuthGuard)
 export class UsersMeController {

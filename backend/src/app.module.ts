@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CommonModule } from './common/common.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ContestsModule } from './contests/contests.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
@@ -13,8 +16,26 @@ import { AiQuizModule } from './ai-quiz/ai-quiz.module';
 import { AchievementsModule } from './achievements/achievements.module';
 
 @Module({
-  imports: [PrismaModule,HealthModule,AuthModule,UsersModule,CategoriesModule, ContestsModule, QuizzesModule, DiscussionsModule, AiQuizModule, AchievementsModule],
+  imports: [
+    ThrottlerModule.forRoot({
+      throttlers: [{ ttl: 60_000, limit: 100 }],
+    }),
+    CommonModule,
+    PrismaModule,
+    HealthModule,
+    AuthModule,
+    UsersModule,
+    CategoriesModule,
+    ContestsModule,
+    QuizzesModule,
+    DiscussionsModule,
+    AiQuizModule,
+    AchievementsModule,
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

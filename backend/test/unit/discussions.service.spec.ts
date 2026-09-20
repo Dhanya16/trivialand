@@ -140,6 +140,29 @@ describe('DiscussionsService', () => {
   });
 
   describe('addReply', () => {
+    it('sanitizes reply content before saving', async () => {
+      prisma.discussion.findUnique.mockResolvedValue({ id: 'd1' });
+      prisma.discussionReply.create.mockResolvedValue({
+        id: 'r-new',
+        content: 'Safe text',
+        createdAt: new Date('2026-09-01T11:00:00.000Z'),
+        author: { username: 'new_user' },
+      });
+
+      await service.addReply('d1', 'user-1', {
+        content: '<script>alert(1)</script>Safe text',
+      });
+
+      expect(prisma.discussionReply.create).toHaveBeenCalledWith({
+        data: {
+          discussionId: 'd1',
+          authorId: 'user-1',
+          content: 'alert(1)Safe text',
+        },
+        select: expect.any(Object),
+      });
+    });
+
     it('creates a reply for an existing thread', async () => {
       prisma.discussion.findUnique.mockResolvedValue({ id: 'd1' });
       prisma.discussionReply.create.mockResolvedValue({

@@ -11,6 +11,8 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -21,12 +23,15 @@ import { MAX_UPLOAD_BYTES } from './ai-quiz.constants';
 import { AiQuizService } from './ai-quiz.service';
 import { GenerateAiQuizDto } from './dto/generate-ai-quiz.dto';
 
+@ApiTags('ai-quiz')
+@ApiBearerAuth()
 @Controller('ai-quiz')
 @UseGuards(JwtAuthGuard)
 export class AiQuizController {
   constructor(private readonly aiQuizService: AiQuizService) {}
 
   @Post('upload')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('file', {

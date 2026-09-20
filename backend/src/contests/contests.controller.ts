@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { OptionalCurrentUser } from '../auth/decorators/optional-current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -19,6 +20,7 @@ import { ContestsService } from './contests.service';
 import { ListContestsQueryDto } from './dto/list-contests-query.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 
+@ApiTags('contests')
 @Controller('contests')
 export class ContestsController {
   constructor(private readonly contestsService: ContestsService) {}

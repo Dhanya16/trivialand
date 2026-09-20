@@ -6,6 +6,7 @@ import {
   QuizAttemptStatus,
   QuizAttemptType,
 } from '@prisma/client';
+import { buildPaginatedResponse, parsePagination } from '../common/utils/pagination.util';
 import { DEFAULT_RATING } from '../contests/contest-rating.util';
 import type { UserProgressResponse } from './types/user-progress.type';
 import type { QuizHistoryQueryDto } from './dto/quiz-history-query.dto';
@@ -76,9 +77,7 @@ export class UsersService {
     userId: string,
     query: QuizHistoryQueryDto,
   ): Promise<PaginatedQuizHistoryResponse> {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = parsePagination(query);
 
     const normalWhere = {
       userId,
@@ -151,23 +150,13 @@ export class UsersService {
     const total = normalCount + aiCount;
     const data = merged.slice(skip, skip + limit);
 
-    return {
-      data,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: total === 0 ? 0 : Math.ceil(total / limit),
-      },
-    };
+    return buildPaginatedResponse(data, page, limit, total);
   }
   async getMeContestHistory(
     userId: string,
     query: QuizHistoryQueryDto,
   ): Promise<PaginatedContestHistoryResponse> {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = parsePagination(query);
 
     const where = {
       userId,
@@ -205,15 +194,7 @@ export class UsersService {
       participatedAt: item.submittedAt as Date,
     }));
 
-    return {
-      data,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: total === 0 ? 0 : Math.ceil(total / limit),
-      },
-    };
+    return buildPaginatedResponse(data, page, limit, total);
   }
   async getMeContestRating(userId: string): Promise<UserContestRatingResponse> {
     const record = await this.prisma.contestRating.findUnique({

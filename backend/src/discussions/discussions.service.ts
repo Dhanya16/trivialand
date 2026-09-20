@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { sanitizePlainText } from '../common/utils/sanitize.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDiscussionDto } from './dto/create-discussion.dto';
 import { CreateReplyDto } from './dto/create-reply.dto';
@@ -115,8 +116,8 @@ export class DiscussionsService {
 
     const discussion = await this.prisma.discussion.create({
       data: {
-        title: dto.title,
-        topic: dto.topic,
+        title: sanitizePlainText(dto.title),
+        topic: sanitizePlainText(dto.topic),
         authorId,
         linkedQuestionId: dto.linkedQuestionId ?? null,
         linkedQuizId: dto.linkedQuizId ?? null,
@@ -158,7 +159,7 @@ export class DiscussionsService {
       data: {
         discussionId,
         authorId,
-        content: dto.content,
+        content: sanitizePlainText(dto.content),
       },
       select: {
         id: true,

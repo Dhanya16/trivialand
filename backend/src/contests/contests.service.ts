@@ -9,6 +9,7 @@ import { ContestStatus } from '@prisma/client';
 import { AchievementsService } from '../achievements/achievements.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubmitQuizDto } from '../quizzes/dto/submit-quiz.dto';
+import { buildPaginatedResponse, parsePagination } from '../common/utils/pagination.util';
 import { ContestRatingService } from './contest-rating.service';
 import { gradeContestSubmission } from './contest-scoring.util';
 import {
@@ -96,9 +97,7 @@ export class ContestsService {
   async getRankings(
     query: PaginationQueryDto,
   ): Promise<PaginatedResponse<GlobalRankingItem>> {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = parsePagination(query);
 
     const [ratings, total] = await Promise.all([
       this.prisma.contestRating.findMany({
@@ -119,15 +118,7 @@ export class ContestsService {
       rating: item.rating,
     }));
 
-    return {
-      data,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: total === 0 ? 0 : Math.ceil(total / limit),
-      },
-    };
+    return buildPaginatedResponse(data, page, limit, total);
   }
 
   async join(contestId: string, userId: string): Promise<JoinContestResponse> {
@@ -345,9 +336,7 @@ export class ContestsService {
   ): Promise<PaginatedResponse<ContestStandingItem>> {
     await this.getContestOrThrow(contestId);
 
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = parsePagination(query);
 
     const where = {
       contestId,
@@ -378,15 +367,7 @@ export class ContestsService {
       submittedAt: item.submittedAt as Date,
     }));
 
-    return {
-      data,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: total === 0 ? 0 : Math.ceil(total / limit),
-      },
-    };
+    return buildPaginatedResponse(data, page, limit, total);
   }
 
   private async getContestOrThrow(contestId: string) {

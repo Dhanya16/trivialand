@@ -3,6 +3,7 @@
   "rootDir": "..",
   "testEnvironment": "node",
   "testRegex": "test/e2e/.*\\.e2e-spec\\.ts$",
+  "setupFilesAfterEnv": ["<rootDir>/test/helpers/integration-setup.ts"],
   "maxWorkers": 1,
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
