@@ -10,6 +10,7 @@ import {
   import { LoginDto } from './dto/login.dto';
   import { NotFoundException } from '@nestjs/common';
 import type { MeResponse } from './types/me-response.type';
+import { ContestRatingService } from '../contests/contest-rating.service';
 import { LevelProgressService } from '../progress/level-progress.service';
   
   @Injectable()
@@ -20,6 +21,7 @@ import { LevelProgressService } from '../progress/level-progress.service';
       private readonly prisma: PrismaService,
       private readonly jwtService: JwtService,
       private readonly levelProgressService: LevelProgressService,
+      private readonly contestRatingService: ContestRatingService,
     ) {}
   
     async register(dto: RegisterDto) {
@@ -54,6 +56,7 @@ import { LevelProgressService } from '../progress/level-progress.service';
         });
 
         await this.levelProgressService.unlockLevelOneForUser(createdUser.id, tx);
+        await this.contestRatingService.initializeForUser(createdUser.id, tx);
 
         return createdUser;
       });

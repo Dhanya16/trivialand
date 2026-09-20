@@ -5,6 +5,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { ContestsModule } from '../contests/contests.module';
 import { ProgressModule } from '../progress/progress.module';
 
 const jwtExpiresIn = (process.env.JWT_EXPIRES_IN ?? '7d') as SignOptions['expiresIn'];
@@ -19,6 +20,7 @@ const jwtExpiresIn = (process.env.JWT_EXPIRES_IN ?? '7d') as SignOptions['expire
       },
     }),
     ProgressModule,
+    ContestsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

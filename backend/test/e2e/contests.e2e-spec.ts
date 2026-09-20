@@ -47,10 +47,16 @@ describe('Contests (e2e)', () => {
     });
 
     contestId = contest.id;
-    submitAnswers = contest.questions.map((item) => ({
-      questionId: item.question.id,
-      selectedOptionId: item.question.options[0].id,
-    }));
+    submitAnswers = contest.questions.map((item) => {
+      const correctOption =
+        item.question.options.find((option) => option.isCorrect) ??
+        item.question.options[0];
+
+      return {
+        questionId: item.question.id,
+        selectedOptionId: correctOption.id,
+      };
+    });
 
     await request(app.getHttpServer())
       .post('/api/auth/register')
@@ -63,6 +69,14 @@ describe('Contests (e2e)', () => {
       .expect(200);
 
     accessToken = loginRes.body.accessToken;
+
+    const ratingRes = await request(app.getHttpServer())
+      .get('/api/users/me/contest-rating')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(ratingRes.body.rating).toBe(1200);
+    expect(ratingRes.body.updatedAt).not.toBeNull();
   }, 30000);
 
   afterAll(async () => {
@@ -111,7 +125,21 @@ describe('Contests (e2e)', () => {
       .expect(200);
 
     expect(submitRes.body.score).toBeGreaterThanOrEqual(0);
-    expect(submitRes.body.newRating).toBeDefined();
+    expect(submitRes.body.ratingChange).toBeGreaterThan(0);
+    expect(submitRes.body.newRating).toBe(
+      1200 + submitRes.body.ratingChange,
+    );
+
+    const achievementsRes = await request(app.getHttpServer())
+      .get('/api/users/me/achievements')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    const slugs = achievementsRes.body.achievements.map(
+      (item: { slug: string }) => item.slug,
+    );
+    expect(slugs).toContain('first-contest');
+    expect(slugs).toContain('rating-1200');
 
     const standingsRes = await request(app.getHttpServer())
       .get(`/api/contests/${contestId}/standings`)
@@ -125,6 +153,11 @@ describe('Contests (e2e)', () => {
       .expect(200);
 
     expect(rankingsRes.body.data.length).toBeGreaterThan(0);
+    expect(rankingsRes.body.data[0]).toMatchObject({
+      rank: expect.any(Number),
+      username: expect.any(String),
+      rating: expect.any(Number),
+    });
 
     const historyRes = await request(app.getHttpServer())
       .get('/api/users/me/contest-history')

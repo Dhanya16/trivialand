@@ -24,4 +24,20 @@ describe('contest-rating.util', () => {
     );
     expect(Math.abs(change)).toBeLessThanOrEqual(ELO_K_FACTOR);
   });
+
+  it('returns zero change for a score matching expectation against equal opponents', () => {
+    const change = calculateContestRatingChange(1200, 1, 2, [1200]);
+    expect(change).toBe(0);
+  });
+
+  it('handles zero-point contests without throwing', () => {
+    const change = calculateContestRatingChange(1200, 0, 0, []);
+    expect(change).toBe(0);
+  });
+
+  it('rewards beating higher-rated opponents more than equal opponents', () => {
+    const againstEqual = calculateContestRatingChange(1200, 2, 2, [1200]);
+    const againstHigher = calculateContestRatingChange(1200, 2, 2, [1500]);
+    expect(againstHigher).toBeGreaterThan(againstEqual);
+  });
 });

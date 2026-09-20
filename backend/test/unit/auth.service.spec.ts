@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../../src/auth/auth.service';
+import { ContestRatingService } from '../../src/contests/contest-rating.service';
 import { LevelProgressService } from '../../src/progress/level-progress.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 
@@ -35,6 +36,10 @@ describe('AuthService', () => {
     unlockLevelOneForUser: jest.fn(),
   };
 
+  const contestRatingService = {
+    initializeForUser: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -42,6 +47,7 @@ describe('AuthService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: JwtService, useValue: jwtService },
         { provide: LevelProgressService, useValue: levelProgressService },
+        { provide: ContestRatingService, useValue: contestRatingService },
       ],
     }).compile();
 
@@ -72,6 +78,10 @@ describe('AuthService', () => {
       expect(result.message).toBe('Registration successful');
       expect(result.user.email).toBe(dto.email);
       expect(levelProgressService.unlockLevelOneForUser).toHaveBeenCalledWith(
+        'user-1',
+        prisma,
+      );
+      expect(contestRatingService.initializeForUser).toHaveBeenCalledWith(
         'user-1',
         prisma,
       );

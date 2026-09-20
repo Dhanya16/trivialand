@@ -9,10 +9,7 @@ import { ContestStatus } from '@prisma/client';
 import { AchievementsService } from '../progress/achievements.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubmitQuizDto } from '../quizzes/dto/submit-quiz.dto';
-import {
-  calculateContestRatingChange,
-  DEFAULT_RATING,
-} from './contest-rating.util';
+import { ContestRatingService } from './contest-rating.service';
 import { gradeContestSubmission } from './contest-scoring.util';
 import {
   deriveContestStatus,
@@ -37,6 +34,7 @@ export class ContestsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly achievementsService: AchievementsService,
+    private readonly contestRatingService: ContestRatingService,
   ) {}
 
   async findAll(query: ListContestsQueryDto): Promise<ContestListItem[]> {
@@ -307,36 +305,14 @@ export class ContestsService {
         }),
       });
 
-      const otherParticipations = await tx.contestParticipation.findMany({
-        where: {
+      const { ratingChange, newRating } =
+        await this.contestRatingService.applyRatingAfterSubmit(
+          userId,
           contestId,
-          submittedAt: { not: null },
-          userId: { not: userId },
-        },
-        select: { userId: true },
-      });
-
-      const opponentUserIds = otherParticipations.map((item) => item.userId);
-      const opponentRatings =
-        opponentUserIds.length > 0
-          ? await tx.contestRating.findMany({
-              where: { userId: { in: opponentUserIds } },
-              select: { rating: true },
-            })
-          : [];
-
-      const currentRating = await tx.contestRating.findUnique({
-        where: { userId },
-      });
-      const userRating = currentRating?.rating ?? DEFAULT_RATING;
-
-      const ratingChange = calculateContestRatingChange(
-        userRating,
-        score,
-        maxScore,
-        opponentRatings.map((item) => item.rating),
-      );
-      const newRating = userRating + ratingChange;
+          score,
+          maxScore,
+          tx,
+        );
 
       await tx.contestParticipation.update({
         where: { id: participation.id },
@@ -345,12 +321,6 @@ export class ContestsService {
           submittedAt: new Date(),
           ratingChange,
         },
-      });
-
-      await tx.contestRating.upsert({
-        where: { userId },
-        create: { userId, rating: newRating },
-        update: { rating: newRating },
       });
 
       await this.achievementsService.awardEligibleAchievements(userId, tx);

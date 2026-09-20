@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { UserBasicProfile } from './types/user-basic-profile.type';
 import { LevelProgressStatus, QuizAttemptStatus } from '@prisma/client';
+import { DEFAULT_RATING } from '../contests/contest-rating.util';
 import type { UserProgressResponse } from './types/user-progress.type';
 import type { QuizHistoryQueryDto } from './dto/quiz-history-query.dto';
 import type { PaginatedQuizHistoryResponse } from './types/quiz-history.type';
@@ -187,7 +188,7 @@ export class UsersService {
       },
     });
     return {
-      rating: record?.rating ?? 1200,
+      rating: record?.rating ?? DEFAULT_RATING,
       updatedAt: record?.updatedAt ?? null,
     };
   }

@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ContestStatus } from '@prisma/client';
+import { ContestRatingService } from '../../src/contests/contest-rating.service';
 import { ContestsService } from '../../src/contests/contests.service';
 import { AchievementsService } from '../../src/progress/achievements.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
@@ -15,6 +16,10 @@ describe('ContestsService', () => {
 
   const achievementsService = {
     awardEligibleAchievements: jest.fn(),
+  };
+
+  const contestRatingService = {
+    applyRatingAfterSubmit: jest.fn(),
   };
 
   const prisma = {
@@ -59,6 +64,7 @@ describe('ContestsService', () => {
         ContestsService,
         { provide: PrismaService, useValue: prisma },
         { provide: AchievementsService, useValue: achievementsService },
+        { provide: ContestRatingService, useValue: contestRatingService },
       ],
     }).compile();
 
@@ -121,6 +127,7 @@ describe('ContestsService', () => {
       expect(achievementsService.awardEligibleAchievements).toHaveBeenCalledWith(
         'user-1',
       );
+      expect(contestRatingService.applyRatingAfterSubmit).not.toHaveBeenCalled();
     });
 
     it('rejects joining after submission', async () => {
@@ -164,12 +171,12 @@ describe('ContestsService', () => {
       prisma.contest.findUnique.mockResolvedValue(liveContest);
       prisma.contestParticipation.findUnique.mockResolvedValue(participation);
       prisma.contestQuestion.findMany.mockResolvedValue(contestQuestions);
-      prisma.contestParticipation.findMany.mockResolvedValue([]);
-      prisma.contestRating.findMany.mockResolvedValue([]);
-      prisma.contestRating.findUnique.mockResolvedValue(null);
       prisma.contestAnswer.createMany.mockResolvedValue({ count: 1 });
       prisma.contestParticipation.update.mockResolvedValue({});
-      prisma.contestRating.upsert.mockResolvedValue({});
+      contestRatingService.applyRatingAfterSubmit.mockResolvedValue({
+        ratingChange: 8,
+        newRating: 1208,
+      });
     });
 
     it('rejects submit after contest expiry', async () => {
@@ -203,9 +210,10 @@ describe('ContestsService', () => {
 
       expect(result.score).toBe(1);
       expect(result.maxScore).toBe(1);
-      expect(result.ratingChange).toBeDefined();
+      expect(result.ratingChange).toBe(8);
+      expect(result.newRating).toBe(1208);
       expect(prisma.contestParticipation.update).toHaveBeenCalled();
-      expect(prisma.contestRating.upsert).toHaveBeenCalled();
+      expect(contestRatingService.applyRatingAfterSubmit).toHaveBeenCalled();
     });
   });
 

@@ -16,17 +16,25 @@ export class AchievementsService {
   ): Promise<void> {
     const client = tx ?? this.prisma;
 
-    const [quizAttempts, levelsCleared, contestParticipations, ratingRow] =
-      await Promise.all([
-        client.quizAttempt.count({
-          where: { userId, status: QuizAttemptStatus.completed },
-        }),
-        client.levelProgress.count({
-          where: { userId, status: LevelProgressStatus.completed },
-        }),
-        client.contestParticipation.count({ where: { userId } }),
-        client.contestRating.findUnique({ where: { userId } }),
-      ]);
+    const [
+      quizAttempts,
+      levelsCleared,
+      contestParticipations,
+      submittedContests,
+      ratingRow,
+    ] = await Promise.all([
+      client.quizAttempt.count({
+        where: { userId, status: QuizAttemptStatus.completed },
+      }),
+      client.levelProgress.count({
+        where: { userId, status: LevelProgressStatus.completed },
+      }),
+      client.contestParticipation.count({ where: { userId } }),
+      client.contestParticipation.count({
+        where: { userId, submittedAt: { not: null } },
+      }),
+      client.contestRating.findUnique({ where: { userId } }),
+    ]);
 
     const rating = ratingRow?.rating ?? 1200;
 
@@ -36,8 +44,8 @@ export class AchievementsService {
     if (contestParticipations >= 1) slugs.push('first-contest');
     if (levelsCleared >= 5) slugs.push('levels-5');
     if (levelsCleared >= 10) slugs.push('levels-10');
-    if (rating >= 1200) slugs.push('rating-1200');
-    if (rating >= 1500) slugs.push('rating-1500');
+    if (submittedContests > 0 && rating >= 1200) slugs.push('rating-1200');
+    if (submittedContests > 0 && rating >= 1500) slugs.push('rating-1500');
 
     if (slugs.length === 0) {
       return;
