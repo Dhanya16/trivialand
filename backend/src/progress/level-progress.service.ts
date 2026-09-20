@@ -6,7 +6,7 @@ import {
   QuizAttemptType,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { AchievementsService } from './achievements.service';
+import { AchievementsService } from '../achievements/achievements.service';
 import { isPassingScore } from './level-progress.constants';
 
 export type LevelProgressResult = {

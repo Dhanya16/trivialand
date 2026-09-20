@@ -88,6 +88,7 @@ const achievements = [
   { slug: 'first-contest', name: 'First contest participated', description: 'Join your first contest.', criteria: 'contest_participations >= 1' },
   { slug: 'levels-5', name: '5 levels cleared', description: 'Clear five levels.', criteria: 'levels_cleared >= 5' },
   { slug: 'levels-10', name: '10 levels cleared', description: 'Clear ten levels.', criteria: 'levels_cleared >= 10' },
+  { slug: 'levels-25', name: '25 levels cleared', description: 'Clear twenty-five levels.', criteria: 'levels_cleared >= 25' },
   { slug: 'rating-1200', name: 'Rating 1200', description: 'Reach a contest rating of 1200.', criteria: 'contest_rating >= 1200' },
   { slug: 'rating-1500', name: 'Rating 1500', description: 'Reach a contest rating of 1500.', criteria: 'contest_rating >= 1500' },
 ];

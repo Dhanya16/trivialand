@@ -4,11 +4,28 @@ import {
   Prisma,
   QuizAttemptStatus,
 } from '@prisma/client';
+import { DEFAULT_RATING } from '../contests/contest-rating.util';
 import { PrismaService } from '../prisma/prisma.service';
+import { resolveEligibleAchievementSlugs } from './achievement-slugs.constants';
+import type { AchievementDefinitionsResponse } from './types/achievement-definition.type';
 
 @Injectable()
 export class AchievementsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async findAllDefinitions(): Promise<AchievementDefinitionsResponse> {
+    const achievements = await this.prisma.achievement.findMany({
+      orderBy: { name: 'asc' },
+      select: {
+        slug: true,
+        name: true,
+        description: true,
+        criteria: true,
+      },
+    });
+
+    return { achievements };
+  }
 
   async awardEligibleAchievements(
     userId: string,
@@ -38,17 +55,14 @@ export class AchievementsService {
       client.contestRating.findUnique({ where: { userId } }),
     ]);
 
-    const rating = ratingRow?.rating ?? 1200;
-
-    const slugs: string[] = [];
-    if (quizAttempts >= 1) slugs.push('first-quiz');
-    if (aiQuizAttempts >= 1) slugs.push('first-ai-quiz');
-    if (levelsCleared >= 1) slugs.push('first-level');
-    if (contestParticipations >= 1) slugs.push('first-contest');
-    if (levelsCleared >= 5) slugs.push('levels-5');
-    if (levelsCleared >= 10) slugs.push('levels-10');
-    if (submittedContests > 0 && rating >= 1200) slugs.push('rating-1200');
-    if (submittedContests > 0 && rating >= 1500) slugs.push('rating-1500');
+    const slugs = resolveEligibleAchievementSlugs({
+      quizAttempts,
+      aiQuizAttempts,
+      levelsCleared,
+      contestParticipations,
+      submittedContests,
+      rating: ratingRow?.rating ?? DEFAULT_RATING,
+    });
 
     if (slugs.length === 0) {
       return;

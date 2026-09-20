@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { AchievementsService } from './achievements.service';
+import { AchievementsModule } from '../achievements/achievements.module';
 import { LevelProgressService } from './level-progress.service';
 
 @Module({
-  providers: [LevelProgressService, AchievementsService],
-  exports: [LevelProgressService, AchievementsService],
+  imports: [AchievementsModule],
+  providers: [LevelProgressService],
+  exports: [LevelProgressService, AchievementsModule],
 })
 export class ProgressModule {}

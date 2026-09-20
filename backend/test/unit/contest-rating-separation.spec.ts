@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { LevelProgressStatus } from '@prisma/client';
 import { ContestRatingService } from '../../src/contests/contest-rating.service';
 import { LevelProgressService } from '../../src/progress/level-progress.service';
-import { AchievementsService } from '../../src/progress/achievements.service';
+import { AchievementsService } from '../../src/achievements/achievements.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 
 describe('Contest rating separation from quiz progress', () => {

@@ -4,7 +4,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AiQuizStatus } from '@prisma/client';
 import { AiQuizService } from '../../src/ai-quiz/ai-quiz.service';
 import { AiGenerationService } from '../../src/ai-quiz/ai-generation.service';
-import { AchievementsService } from '../../src/progress/achievements.service';
+import { AchievementsService } from '../../src/achievements/achievements.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 
 describe('AiQuizService', () => {

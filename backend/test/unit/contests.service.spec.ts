@@ -8,7 +8,7 @@ import {
 import { ContestStatus } from '@prisma/client';
 import { ContestRatingService } from '../../src/contests/contest-rating.service';
 import { ContestsService } from '../../src/contests/contests.service';
-import { AchievementsService } from '../../src/progress/achievements.service';
+import { AchievementsService } from '../../src/achievements/achievements.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 
 describe('ContestsService', () => {

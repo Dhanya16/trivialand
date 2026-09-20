@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LevelProgressStatus } from '@prisma/client';
 import { LevelProgressService } from '../../src/progress/level-progress.service';
-import { AchievementsService } from '../../src/progress/achievements.service';
+import { AchievementsService } from '../../src/achievements/achievements.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 
 describe('LevelProgressService', () => {

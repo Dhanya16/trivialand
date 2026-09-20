@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ContestStatus } from '@prisma/client';
-import { AchievementsService } from '../progress/achievements.service';
+import { AchievementsService } from '../achievements/achievements.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubmitQuizDto } from '../quizzes/dto/submit-quiz.dto';
 import { ContestRatingService } from './contest-rating.service';

@@ -6,7 +6,7 @@ import {
 import { AiQuizStatus } from '@prisma/client';
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { AchievementsService } from '../progress/achievements.service';
+import { AchievementsService } from '../achievements/achievements.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubmitQuizDto } from '../quizzes/dto/submit-quiz.dto';
 import { AiGenerationService } from './ai-generation.service';
